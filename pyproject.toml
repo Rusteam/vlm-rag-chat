@@ -1,0 +1,31 @@
+[tool.poetry]
+name = "vlm-rag-chat"
+version = "0.1.0"
+description = "Chat about your own textual and visual documents"
+authors = ["Rustem Galiullin <rustemgal@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+haystack-ai = "^2.2.3"
+ollama-haystack = "^0.0.7"
+hayhooks = "^0.0.15"
+gradio = "^4.36.1"
+fire = "^0.6.0"
+requests = "^2.32.3"
+qdrant-haystack = "^3.8.1"
+pyyaml = "^6.0.1"
+pydantic = "^2.7.4"
+markdown-it-py = "^3.0.0"
+mdit-plain = "^1.0.1"
+pypdf = "^4.2.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.2.2"
+pytest-mock = "^3.14.0"
+pre-commit = "^3.7.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
