@@ -107,6 +107,16 @@ Outputs:
 As a result, we have new documents indexed to the qdrant vector db.
 Later on, we will be able to interact with these documents using an LLM.
 
+To add new documents without overwriting existing documents,
+ensure to skip recreating a collection by adding an extra parameter.
+
+```
+❯ python main.py index \
+        --recreate-index False \
+        --store_params '{location:localhost,index:recipe_files}' \
+        run --path=tests/data/extra_files
+```
+
 #### Ask questions (RAG)
 
 Once documents have been indexed into a qdrant collection,

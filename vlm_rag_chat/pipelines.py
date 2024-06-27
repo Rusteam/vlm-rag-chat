@@ -1,14 +1,17 @@
 import abc
 from pathlib import Path
 
-import numpy as np
 import pydantic
-from haystack import Document, Pipeline, component
+from haystack import Pipeline
 from haystack.components.builders import PromptBuilder
 from haystack.components.converters import (
     MarkdownToDocument,
     PyPDFToDocument,
     TextFileToDocument,
+)
+from haystack.components.embedders import (
+    SentenceTransformersDocumentEmbedder,
+    SentenceTransformersTextEmbedder,
 )
 from haystack.components.joiners import DocumentJoiner
 from haystack.components.preprocessors import DocumentCleaner, DocumentSplitter
@@ -22,40 +25,10 @@ from haystack_integrations.document_stores.qdrant import QdrantDocumentStore
 from termcolor import cprint
 
 
-@component
-class DummyDocumentEmbedder:
-    def __init__(self, name: str, embedding_dim: int = 512):
-        self.name = name
-        self.embedding_dim = embedding_dim
-
-    def warm_up(self):
-        pass
-
-    @component.output_types(documents=list[Document])
-    def run(self, documents: list[Document]):
-        for doc in documents:
-            doc.embedding = np.random.rand(self.embedding_dim).tolist()
-        return {"documents": documents}
-
-
-@component
-class DummyTextEmbedder:
-    def __init__(self, name: str, embedding_dim: int = 512):
-        self.name = name
-        self.embedding_dim = embedding_dim
-
-    def warm_up(self):
-        pass
-
-    @component.output_types(embedding=list[float])
-    def run(self, text: str):
-        return {"embedding": np.random.rand(self.embedding_dim).tolist()}
-
-
 class DocumentStoreParams(pydantic.BaseModel):
     location: str = ":memory:"
     index: str = "documents"
-    embedding_dim: int = 512
+    embedding_dim: int = 384
     hnsw_config: dict = {"m": 16, "ef_construct": 64}
 
 
@@ -81,17 +54,13 @@ class BasePipeline(pydantic.BaseModel, abc.ABC):
 
     @property
     def document_embedder(self):
-        # embedder = SentenceTransformersDocumentEmbedder(
-        #     model=self.text_embedder_name)
-        embedder = DummyDocumentEmbedder(self.text_embedder_name)
+        embedder = SentenceTransformersDocumentEmbedder(model=self.text_embedder_name)
         embedder.warm_up()
         return embedder
 
     @property
     def text_embedder(self):
-        # embedder = SentenceTransformersTextEmbedder(
-        #     model=self.text_embedder_name)
-        embedder = DummyTextEmbedder(self.text_embedder_name)
+        embedder = SentenceTransformersTextEmbedder(model=self.text_embedder_name)
         embedder.warm_up()
         return embedder
 
@@ -176,7 +145,7 @@ class IndexingPipeline(BasePipeline):
         indexing_pipeline.connect("markdown_converter", "document_joiner")
         indexing_pipeline.connect("document_joiner", "document_cleaner")
         indexing_pipeline.connect("document_cleaner", "document_splitter")
-        indexing_pipeline.connect("document_splitter", "text_embedder")
+        indexing_pipeline.connect("document_splitter", "document_embedder")
         indexing_pipeline.connect("document_embedder", "document_writer")
 
         cprint("Created an indexing pipeline", "yellow")

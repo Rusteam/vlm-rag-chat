@@ -20,6 +20,7 @@ pydantic = "^2.7.4"
 markdown-it-py = "^3.0.0"
 mdit-plain = "^1.0.1"
 pypdf = "^4.2.0"
+sentence-transformers = "^3.0.1"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.2.2"
