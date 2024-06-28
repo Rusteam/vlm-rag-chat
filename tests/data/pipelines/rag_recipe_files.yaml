@@ -1,0 +1,98 @@
+components:
+  embedder:
+    init_parameters:
+      batch_size: 32
+      device:
+        device: mps
+        type: single
+      model: sentence-transformers/all-MiniLM-L6-v2
+      normalize_embeddings: false
+      prefix: ''
+      progress_bar: true
+      suffix: ''
+      token:
+        env_vars:
+        - HF_API_TOKEN
+        strict: false
+        type: env_var
+      trust_remote_code: false
+    type: haystack.components.embedders.sentence_transformers_text_embedder.SentenceTransformersTextEmbedder
+  llm:
+    init_parameters:
+      generation_kwargs: {}
+      model: llama3
+      raw: false
+      streaming_callback: null
+      system_prompt: null
+      template: null
+      timeout: 120
+      url: http://localhost:11434/api/generate
+    type: haystack_integrations.components.generators.ollama.generator.OllamaGenerator
+  prompt_builder:
+    init_parameters:
+      required_variables: null
+      template: "\n        Answer the questions based on the given context.\n\n  \
+        \      Context:\n        {% for document in documents %}\n            {{ document.content\
+        \ }}\n        {% endfor %}\n\n        Question: {{ query }}\n        Answer:\n\
+        \        "
+      variables: null
+    type: haystack.components.builders.prompt_builder.PromptBuilder
+  retriever:
+    init_parameters:
+      document_store:
+        init_parameters:
+          api_key: null
+          content_field: content
+          duplicate_documents: overwrite
+          embedding_dim: 384
+          embedding_field: embedding
+          force_disable_check_same_thread: false
+          grpc_port: 6334
+          hnsw_config:
+            ef_construct: 64
+            m: 16
+          host: null
+          https: null
+          index: recipe_files
+          init_from: null
+          location: localhost
+          metadata: {}
+          name_field: name
+          on_disk: false
+          on_disk_payload: null
+          optimizers_config: null
+          path: null
+          payload_fields_to_index: null
+          port: 6333
+          prefer_grpc: false
+          prefix: null
+          progress_bar: true
+          quantization_config: null
+          recreate_index: false
+          replication_factor: null
+          return_embedding: false
+          scroll_size: 10000
+          shard_number: null
+          similarity: cosine
+          timeout: null
+          url: null
+          use_sparse_embeddings: false
+          wait_result_from_api: true
+          wal_config: null
+          write_batch_size: 100
+          write_consistency_factor: null
+        type: haystack_integrations.document_stores.qdrant.document_store.QdrantDocumentStore
+      filters: null
+      return_embedding: false
+      scale_score: true
+      top_k: 10
+    type: haystack_integrations.components.retrievers.qdrant.retriever.QdrantEmbeddingRetriever
+connections:
+- receiver: retriever.query_embedding
+  sender: embedder.embedding
+- receiver: prompt_builder.documents
+  sender: retriever.documents
+- receiver: llm.prompt
+  sender: prompt_builder.prompt
+max_loops_allowed: 100
+metadata: {}

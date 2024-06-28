@@ -1,0 +1,139 @@
+components:
+  document_cleaner:
+    init_parameters:
+      keep_id: false
+      remove_empty_lines: true
+      remove_extra_whitespaces: true
+      remove_regex: null
+      remove_repeated_substrings: false
+      remove_substrings: null
+    type: haystack.components.preprocessors.document_cleaner.DocumentCleaner
+  document_embedder:
+    init_parameters:
+      batch_size: 32
+      device:
+        device: mps
+        type: single
+      embedding_separator: '
+
+        '
+      meta_fields_to_embed: []
+      model: sentence-transformers/all-MiniLM-L6-v2
+      normalize_embeddings: false
+      prefix: ''
+      progress_bar: true
+      suffix: ''
+      token:
+        env_vars:
+        - HF_API_TOKEN
+        strict: false
+        type: env_var
+      trust_remote_code: false
+    type: haystack.components.embedders.sentence_transformers_document_embedder.SentenceTransformersDocumentEmbedder
+  document_joiner:
+    init_parameters:
+      join_mode: concatenate
+      sort_by_score: true
+      top_k: null
+      weights: null
+    type: haystack.components.joiners.document_joiner.DocumentJoiner
+  document_splitter:
+    init_parameters:
+      split_by: word
+      split_length: 250
+      split_overlap: 25
+      split_threshold: 0
+    type: haystack.components.preprocessors.document_splitter.DocumentSplitter
+  document_writer:
+    init_parameters:
+      document_store:
+        init_parameters:
+          api_key: null
+          content_field: content
+          duplicate_documents: overwrite
+          embedding_dim: 384
+          embedding_field: embedding
+          force_disable_check_same_thread: false
+          grpc_port: 6334
+          hnsw_config:
+            ef_construct: 64
+            m: 16
+          host: null
+          https: null
+          index: recipe_files
+          init_from: null
+          location: localhost
+          metadata: {}
+          name_field: name
+          on_disk: false
+          on_disk_payload: null
+          optimizers_config: null
+          path: null
+          payload_fields_to_index: null
+          port: 6333
+          prefer_grpc: false
+          prefix: null
+          progress_bar: true
+          quantization_config: null
+          recreate_index: true
+          replication_factor: null
+          return_embedding: false
+          scroll_size: 10000
+          shard_number: null
+          similarity: cosine
+          timeout: null
+          url: null
+          use_sparse_embeddings: false
+          wait_result_from_api: true
+          wal_config: null
+          write_batch_size: 100
+          write_consistency_factor: null
+        type: haystack_integrations.document_stores.qdrant.document_store.QdrantDocumentStore
+      policy: OVERWRITE
+    type: haystack.components.writers.document_writer.DocumentWriter
+  file_type_router:
+    init_parameters:
+      mime_types:
+      - text/plain
+      - application/pdf
+      - text/markdown
+    type: haystack.components.routers.file_type_router.FileTypeRouter
+  markdown_converter:
+    init_parameters:
+      progress_bar: true
+      table_to_single_line: false
+    type: haystack.components.converters.markdown.MarkdownToDocument
+  pypdf_converter:
+    init_parameters:
+      converter:
+        init_parameters: {}
+        type: haystack.components.converters.pypdf.DefaultConverter
+      converter_name: null
+    type: haystack.components.converters.pypdf.PyPDFToDocument
+  text_file_converter:
+    init_parameters:
+      encoding: utf-8
+    type: haystack.components.converters.txt.TextFileToDocument
+connections:
+- receiver: text_file_converter.sources
+  sender: file_type_router.text/plain
+- receiver: pypdf_converter.sources
+  sender: file_type_router.application/pdf
+- receiver: markdown_converter.sources
+  sender: file_type_router.text/markdown
+- receiver: document_joiner.documents
+  sender: text_file_converter.documents
+- receiver: document_joiner.documents
+  sender: markdown_converter.documents
+- receiver: document_joiner.documents
+  sender: pypdf_converter.documents
+- receiver: document_cleaner.documents
+  sender: document_joiner.documents
+- receiver: document_splitter.documents
+  sender: document_cleaner.documents
+- receiver: document_embedder.documents
+  sender: document_splitter.documents
+- receiver: document_writer.documents
+  sender: document_embedder.documents
+max_loops_allowed: 100
+metadata: {}

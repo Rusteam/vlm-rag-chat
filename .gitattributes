@@ -1,0 +1,5 @@
+tests/data/recipe_files/vegan_keto_eggplant_recipe.pdf filter=lfs diff=lfs merge=lfs -text
+tests/data/recipe_files/vegan_sunflower_hemp_cheese_recipe.txt filter=lfs diff=lfs merge=lfs -text
+tests/data/pipelines/index_recipe_files.yaml filter=lfs diff=lfs merge=lfs -text
+tests/data/pipelines/rag_recipe_files.yaml filter=lfs diff=lfs merge=lfs -text
+tests/data/recipe_files/vegan_flan_recipe.md filter=lfs diff=lfs merge=lfs -text

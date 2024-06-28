@@ -17,6 +17,8 @@ from haystack.components.joiners import DocumentJoiner
 from haystack.components.preprocessors import DocumentCleaner, DocumentSplitter
 from haystack.components.routers import FileTypeRouter
 from haystack.components.writers import DocumentWriter
+from haystack.components.writers.document_writer import DuplicatePolicy
+from haystack.document_stores.types import DocumentStore
 from haystack_integrations.components.generators.ollama import OllamaGenerator
 from haystack_integrations.components.retrievers.qdrant.retriever import (
     QdrantEmbeddingRetriever,
@@ -65,18 +67,25 @@ class BasePipeline(pydantic.BaseModel, abc.ABC):
         return embedder
 
     @property
-    def document_store(self):
+    def document_store(self) -> DocumentStore | QdrantDocumentStore:
         return QdrantDocumentStore(
             recreate_index=self.recreate_index, **dict(self.store_params)
         )
 
     @abc.abstractmethod
-    def create_pipeline(self):
+    def create_pipeline(self) -> Pipeline:
         ...
 
     @abc.abstractmethod
     def run(self):
         ...
+
+    def export(self, write_path: str) -> None:
+        """Save a pipeline to run with hayhooks."""
+        pipeline = self.create_pipeline()
+        with open(write_path, "w") as fp:
+            pipeline.dump(fp)
+        cprint(f"Seriliazed a pipeline to {write_path!r}", "green")
 
 
 class IndexingPipeline(BasePipeline):
@@ -84,12 +93,14 @@ class IndexingPipeline(BasePipeline):
     splitter_params: DocumentSplitterParams = DocumentSplitterParams()
 
     @property
-    def document_splitter(self):
+    def document_splitter(self) -> DocumentSplitter:
         return DocumentSplitter(**dict(self.splitter_params))
 
     @property
-    def document_writer(self):
-        return DocumentWriter(self.document_store)
+    def document_writer(self) -> DocumentWriter:
+        return DocumentWriter(
+            document_store=self.document_store, policy=DuplicatePolicy.OVERWRITE
+        )
 
     def create_pipeline(self):
         # indexing components

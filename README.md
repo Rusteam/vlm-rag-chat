@@ -8,6 +8,7 @@ RAG pipelines for textual and visual data.
 - \[x\] Index files for chatting
 - \[x\] Vector database for persistence
 - \[x\] Answer user questions with a LLM
+- \[x\] REST api
 - \[ \] Reference original documents in the answers
 - \[ \] Guardrails to prevent inappropriate and irrelevant answers
 - \[ \] Webpage
@@ -154,3 +155,44 @@ bbly.
 ```
 
 Continue by asking different questions.
+
+#### Serialize pipelines
+
+In order to re-use pipelines with the REST api,
+save them as yaml files using the `export` command:
+
+```
+❯ python main.py index --store_params '{location:localhost,index:recipe_files}' export --write-path tests/data/pipelines/index_recipe_files.yaml
+
+❯ python main.py rag --store_params '{location:localhost,index:recipe_files}' export --write-path tests/data/pipelines/rag_recipe_files.yaml
+```
+
+These commands will create two yaml files (one per each pipeline)
+at the specified filepath location. Any storage/llm/chunking parameters
+can be passed on the cli command or updated inside a yaml file.
+
+#### REST api
+
+REST api is implemented using [hayhooks](https://github.com/deepset-ai/hayhooks),
+which is tightly integrated with `haystack`.
+
+> NOTE: use [my fork](https://github.com/Rusteam/hayhooks/tree/fix-typing)
+> of hayhooks until [this PR](https://github.com/deepset-ai/hayhooks/pull/31) is merged.
+
+Run a fastapi sever and load the exported pipelines:
+
+```
+❯ hayhooks run --pipelines-dir tests/data/pipelines                             ─╯
+
+Outputs:
+INFO:     Pipelines dir set to: tests/data/pipelines
+INFO:     Deployed pipeline: index_recipe_files
+INFO:     Deployed pipeline: rag_recipe_files
+INFO:     Started server process [44078]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://localhost:1416 (Press CTRL+C to quit)
+```
+
+Navigate to [localhost swagger](http://localhost:1416/docs#/)
+and try out pipeline endpoints.
