@@ -26,7 +26,7 @@ components:
       system_prompt: null
       template: null
       timeout: 120
-      url: http://localhost:11434/api/generate
+      url: http://docker.host.internal:11434/api/generate
     type: haystack_integrations.components.generators.ollama.generator.OllamaGenerator
   prompt_builder:
     init_parameters:
@@ -55,7 +55,7 @@ components:
           https: null
           index: recipe_files
           init_from: null
-          location: localhost
+          location: qdrant
           metadata: {}
           name_field: name
           on_disk: false

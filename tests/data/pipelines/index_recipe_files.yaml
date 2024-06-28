@@ -62,7 +62,7 @@ components:
           https: null
           index: recipe_files
           init_from: null
-          location: localhost
+          location: qdrant
           metadata: {}
           name_field: name
           on_disk: false

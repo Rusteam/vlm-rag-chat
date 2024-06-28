@@ -1,7 +1,6 @@
 services:
   qdrant:
     image: qdrant/qdrant:latest
-    restart: always
     container_name: vector-db-qdrant
     ports:
       - 6333:6333
@@ -15,6 +14,18 @@ services:
         target: /qdrant/config/production.yaml
     volumes:
       - ./data/qdrant_data:/qdrant/storage
+    restart: unless-stopped
+  hayhooks:
+    build:
+      context: .
+      dockerfile: Hayhooks.dockerfile
+    container_name: rest-api-hayhooks
+    ports:
+      - "1416:1416"
+    volumes:
+      - ./tests/data/pipelines:/pipelines
+    restart: unless-stopped
+    command: hayhooks run --pipelines-dir /pipelines
 
 configs:
   qdrant_config:

@@ -14,7 +14,7 @@ RAG pipelines for textual and visual data.
 - \[ \] Webpage
 - \[ \] Docker-compose to run all services
 
-## Usage
+## Usage (dev version)
 
 ### Installation
 
@@ -196,3 +196,14 @@ INFO:     Uvicorn running on http://localhost:1416 (Press CTRL+C to quit)
 
 Navigate to [localhost swagger](http://localhost:1416/docs#/)
 and try out pipeline endpoints.
+
+## Usage (docker)
+
+To run with docker, start services from the docker-compose file
+(this expects `ollama` running on localhost):
+
+```
+docker compose up
+```
+
+Navigate to swagger and try invoking pipeline endpoints.

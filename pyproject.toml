@@ -27,6 +27,15 @@ pytest = "^8.2.2"
 pytest-mock = "^3.14.0"
 pre-commit = "^3.7.1"
 
+
+[tool.poetry.group.docker.dependencies]
+ollama-haystack = "^0.0.7"
+qdrant-haystack = "^3.8.1"
+markdown-it-py = "^3.0.0"
+mdit-plain = "^1.0.1"
+pypdf = "^4.2.0"
+sentence-transformers = "^3.0.1"
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
